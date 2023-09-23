@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Mad Visor",
+  "description": "Usability tool for heightened focus",
+  "version": "1.0",
+  "action": {
+    "default_popup": "default-popup.html",
+    "default_icon": "icon.png"
+  },
+  "content_scripts": [
+    {
+        "js": ["content.js"],
+        "matches": ["<all_urls>"]
+    }
+  ]
+}
