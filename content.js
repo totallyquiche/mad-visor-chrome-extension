@@ -1,16 +1,26 @@
 chrome.runtime.onMessage.addListener(
   function (request) {
-    visible = (request.active === 'on') ? true : false;
-    display = visible ? 'initial' : 'none';
+    // Handle visor toggle
+    if (request.messageId === 'toggleVisor') {
+      const visible = (request.active === 'on') ? true : false;
+      const display = visible ? 'initial' : 'none';
 
-    visorHeaderElement.setStyles([{ name: 'display', value: display }]);
-    visorFooterElement.setStyles([{ name: 'display', value: display }]);
+      visorHeaderElement.setStyles([{ name: 'display', value: display }]);
+      visorFooterElement.setStyles([{ name: 'display', value: display }]);
+    }
+
+    // Handle visor resize
+    if (request.messageId === 'shrinkOrGrowVisor') {
+      visorHeight *= (request.shrinkOrGrow == 'shrink') ? 0.75 : 1.25;
+    }
   }
 );
 
 const bodyElement = document.querySelector('body');
 const visorHeaderElement = document.createElement('div');
 const visorFooterElement = document.createElement('div');
+
+let visorHeight = 100;
 
 bodyElement.append(visorHeaderElement);
 bodyElement.append(visorFooterElement);
@@ -46,7 +56,6 @@ visorFooterElement.setStyles([
 ]);
 
 document.addEventListener('mousemove', event => {
-  const visorHeight = '150';
   const visorOffset = visorHeight / 2;
 
   if (event.clientY <= visorOffset) { // Prevent visor from moving too high...
