@@ -1,29 +1,17 @@
-chrome.runtime.onMessage.addListener(
-  function (request) {
-    // Handle visor toggle
-    if (request.messageId === 'toggleVisor') {
-      const visible = (request.active === 'on') ? true : false;
-      const display = visible ? 'initial' : 'none';
-
-      visorHeaderElement.setStyles([{ name: 'display', value: display }]);
-      visorFooterElement.setStyles([{ name: 'display', value: display }]);
-    }
-
-    // Handle visor resize
-    if (request.messageId === 'shrinkOrGrowVisor') {
-      visorHeight *= (request.shrinkOrGrow == 'shrink') ? 0.75 : 1.25;
-    }
-  }
-);
-
 const bodyElement = document.querySelector('body');
+const visorContainerElement = document.createElement('div');
 const visorHeaderElement = document.createElement('div');
+const visorElement = document.createElement('div');
 const visorFooterElement = document.createElement('div');
+const visorSizeIncrement = 5;
 
-let visorHeight = 100;
+let visorSize = visorSizeIncrement * 2;
 
-bodyElement.append(visorHeaderElement);
-bodyElement.append(visorFooterElement);
+visorContainerElement.append(visorHeaderElement);
+visorContainerElement.append(visorElement);
+visorContainerElement.append(visorFooterElement);
+
+bodyElement.append(visorContainerElement);
 
 const setStyles = function(styles) {
   styles.forEach(style => {
@@ -31,57 +19,80 @@ const setStyles = function(styles) {
   });
 }
 
+visorContainerElement.setStyles = setStyles;
 visorHeaderElement.setStyles = setStyles;
+visorElement.setStyles = setStyles;
 visorFooterElement.setStyles = setStyles;
 
-visorHeaderElement.setStyles([
-  { name: 'display', value: 'none' },
+visorContainerElement.setStyles([
   { name: 'position', value: 'fixed' },
   { name: 'top', value: '0' },
-  { name: 'background-color', value: 'black' },
-  { name: 'opacity', value: '0.25' },
-  { name: 'height', value: '100vh' },
-  { name: 'width', value: '100vw' },
+  { name: 'left', value: '0' },
   { name: 'z-index', value: '99999' },
+  { name: 'display', value: 'flex' },
+  { name: 'flex-direction', value: 'column' },
+  { name: 'width', value: '100vw' },
+  { name: 'height', value: '100vh' },
+  { name: 'opacity', value: '0.15' },
+  { name: 'pointer-events', value: 'none' },
+]);
+
+visorHeaderElement.setStyles([
+  { name: 'background-color', value: 'black' },
+  { name: 'flex', value: '1' },
+]);
+
+visorElement.setStyles([
+  { name: 'flex-grow', value: '1' },
+  { name: 'flex-shrink', value: '1' },
 ]);
 
 visorFooterElement.setStyles([
-  { name: 'display', value: 'none' },
-  { name: 'position', value: 'fixed' },
-  { name: 'top', value: '0' },
   { name: 'background-color', value: 'black' },
-  { name: 'opacity', value: '0.25' },
-  { name: 'width', value: '100vw' },
-  { name: 'z-index', value: '99999' },
+  { name: 'flex', value: '1' },
 ]);
 
-document.addEventListener('mousemove', event => {
-  const visorOffset = visorHeight / 2;
+const setVisorSize = () => {
+  visorElement.setStyles([
+    { name: 'flex-basis', value: `${visorSize}%` },
+  ]);
+};
 
-  if (event.clientY <= visorOffset) { // Prevent visor from moving too high...
-    visorHeaderElement.setStyles([ { name: 'height', value: '0' } ]);
+const showVisor = () => {
+  visorContainerElement.setStyles([{name: 'display', value: 'flex'}]);
+};
 
-    visorFooterElement.setStyles([
-      { name: 'top', value: visorHeight + 'px' },
-      { name: 'height', value:  (window.innerHeight - visorHeight) + 'px' },
-    ]);
-  } else if (event.clientY >= (window.innerHeight - visorOffset)) { // ...or too low
-    visorHeaderElement.setStyles([
-      { name: 'height', value: (window.innerHeight - visorHeight) + 'px' },
-    ]);
+const hideVisor = () => {
+  visorContainerElement.setStyles([{name: 'display', value: 'none'}]);
+};
 
-    visorFooterElement.setStyles([
-      { name: 'top', value: visorHeight + 'px' },
-      { name: 'height', value: '0' },
-    ]);
-  } else {
-    visorHeaderElement.setStyles([
-      { name: 'height', value: (event.clientY - visorOffset) + 'px' },
-    ]);
+const growVisor = () => {
+  if (visorSize + visorSizeIncrement <= 100) {
+    visorSize = visorSize + visorSizeIncrement;
 
-    visorFooterElement.setStyles([
-      { name: 'top', value: (event.clientY + visorOffset) + 'px' },
-      { name: 'height', value: (window.innerHeight - (event.clientY + visorOffset)) + 'px' },
-    ]);
+    setVisorSize();
   }
-});
+};
+
+const shrinkVisor = () => {
+  if (visorSize - visorSizeIncrement >= 0) {
+    visorSize = visorSize - visorSizeIncrement;
+
+    setVisorSize();
+  }
+};
+
+setVisorSize(visorSize);
+
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    switch (request.messageId) {
+      case 'toggleVisor':
+        (request.active === 'on') ? showVisor() : hideVisor();
+        break;
+      case 'shrinkOrGrowVisor':
+        (request.shrinkOrGrow === 'shrink') ? shrinkVisor() : growVisor();
+        break;
+    }
+  }
+);
