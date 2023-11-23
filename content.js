@@ -3,9 +3,9 @@ const visorContainerElement = document.createElement('div');
 const visorHeaderElement = document.createElement('div');
 const visorElement = document.createElement('div');
 const visorFooterElement = document.createElement('div');
-const visorSizeIncrement = 5;
+const visorSizeIncrement = 10;
 
-let visorSize = visorSizeIncrement * 2;
+let visorSize = visorSizeIncrement * 10;
 
 visorContainerElement.append(visorHeaderElement);
 visorContainerElement.append(visorElement);
@@ -39,12 +39,10 @@ visorContainerElement.setStyles([
 
 visorHeaderElement.setStyles([
   { name: 'background-color', value: 'black' },
-  { name: 'flex', value: '1' },
 ]);
 
 visorElement.setStyles([
-  { name: 'flex-grow', value: '1' },
-  { name: 'flex-shrink', value: '1' },
+  { name: 'height', value: `${visorSize}px` },
 ]);
 
 visorFooterElement.setStyles([
@@ -54,7 +52,7 @@ visorFooterElement.setStyles([
 
 const setVisorSize = () => {
   visorElement.setStyles([
-    { name: 'flex-basis', value: `${visorSize}%` },
+    { name: 'height', value: `${visorSize}px` },
   ]);
 };
 
@@ -67,20 +65,36 @@ const hideVisor = () => {
 };
 
 const growVisor = () => {
-  if (visorSize + visorSizeIncrement <= 100) {
-    visorSize = visorSize + visorSizeIncrement;
+  visorSize = visorSize + visorSizeIncrement;
 
-    setVisorSize();
-  }
+  setVisorSize();
 };
 
 const shrinkVisor = () => {
-  if (visorSize - visorSizeIncrement >= 0) {
+  if (visorSize - visorSizeIncrement >= visorSizeIncrement) {
     visorSize = visorSize - visorSizeIncrement;
 
     setVisorSize();
   }
 };
+
+document.addEventListener('mousemove', event => {
+  const windowHeight = window.innerHeight;
+
+  let headerHeight = event.clientY - (visorSize / 2);
+
+  if (headerHeight < 0) {
+    headerHeight = 0;
+  }
+
+  if (headerHeight >= (windowHeight - visorSize)) {
+    headerHeight = (windowHeight - visorSize);
+  }
+
+  visorHeaderElement.setStyles([
+    { name: 'height', value: `${headerHeight}px` },
+  ]);
+});
 
 setVisorSize(visorSize);
 
