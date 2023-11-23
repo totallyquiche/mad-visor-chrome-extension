@@ -15,3 +15,12 @@ You can change the size of the transparent strip to view more or less of the pag
 ## Screenshots
 
 ![A screen capture of a browser window with the abstract of an NIH article in view. The entire page is covered by a slightly transparent black color, except for a fully transparent strip spanning the full width of the page. The overall effect is that a portion of the web page appears highlighted or the other parts appear dimmed.](visor-screenshot.png)
+
+## TODO
+
+- Persist settings
+- Add button hover states
+- Add help text
+- Allow changing visor opacity
+- Allow changing visor color
+- Allow changing color of area outside visor
